@@ -1,23 +1,11 @@
 # Agent Contract Blueprint
 
-Generate project-specific contracts from this blueprint. Do not copy placeholder vocabulary into the
-target. Every contract must answer one question/job and contain exactly seven ordered sections.
+Generate project-specific contracts only for capabilities assigned to agents. Do not copy placeholder or
+source-stack vocabulary into the target.
 
-## Contents
+## Global contract
 
-- Global invariants
-- Explorer contract
-- Architect contract
-- Implementation worker contract
-- Fast worker contract (optional)
-- Test Engineer contract
-- Security Reviewer contract
-- Validator contract
-- Orchestrator integration
-
-## Global invariants
-
-Use these exact headings inside each TOML `developer_instructions` string:
+Use these exact headings once and in order inside each TOML `developer_instructions` string:
 
 ```text
 ## ROLE
@@ -26,133 +14,104 @@ Use these exact headings inside each TOML `developer_instructions` string:
 ## RESPONSIBILITIES
 ## PERMISSIONS
 ## STOP / ESCALATION CONDITIONS
-## OUTPUT SCHEMA
+## OUTPUT
 ```
 
-Every INPUTS section must require all five delegation fields:
+`INPUTS` must require every field in [handoff-protocol.md](handoff-protocol.md). If a field is missing,
+ambiguous, or contradictory, stop before acting and escalate to root. State that sandbox/runtime
+capability never expands contract permissions. Use exact project paths, commands, architecture terms,
+trust boundaries, and trace IDs when they exist.
 
-- INPUT
-- SCOPE
-- CONSTRAINTS
-- EXPECTED OUTPUT
-- STOP CONDITIONS
-
-If any field is missing, ambiguous, or contradictory, require escalation before action. State that
-sandbox/runtime capability never expands the contract.
-
-Use concise descriptions and evidence-backed project terminology. Include exact paths and commands only
-when they exist in the target repository.
-
-## Explorer contract
+## Explorer
 
 **Question:** `How does it work now?`
+
 **Sandbox:** `read-only`
 
-ROLE:
-- Identify as a read-only explorer for the detected project type and stack.
+- Locate relevant modules, files, symbols, entrypoints, source-of-truth/generated boundaries, tests, and
+  documentation.
+- Trace the scoped control/data flow, dependencies, persistence, side effects, and trust boundaries.
+- Identify existing patterns, likely change surfaces, conflicting implementations, and uncertainty.
+- Cite exact paths/symbols and label facts with `E#` identifiers for non-trivial work.
+- Keep exploration bounded: do not perform broad scans when manifests and a few entrypoints answer the
+  question.
+- Do not edit, redesign, implement, run destructive/write-producing commands, give security verdicts, or
+  make broad recommendations unless explicitly asked.
+- Stop when two conflicting implementations appear authoritative, required evidence is out of scope, or
+  answering requires writes/live access.
 
-OBJECTIVE:
-- Answer only the current-state question.
-- Forbid design proposals, edits, testing, security verdicts, and final approval.
-
-RESPONSIBILITIES:
-- Trace the scoped execution/data flow, dependencies, persistence, side effects, docs, and tests.
-- Report exact paths/symbols and distinguish facts from uncertainty.
-- Verify actual auth/trust boundaries and generated/source-of-truth files when relevant.
-
-PERMISSIONS:
-- Allow targeted reads/searches and genuinely read-only Git/config inspection.
-- Forbid edits, index changes, write-producing checks, services, database changes, and external state.
-
-STOP CONDITIONS:
-- Missing delegation fields/evidence, out-of-scope evidence, required write/live access, or ambiguity.
-
-OUTPUT SCHEMA:
+Output:
 
 ```text
 STATUS: COMPLETE | ESCALATED
 QUESTION: How does it work now?
 ANSWER:
 CURRENT FLOW:
-EVIDENCE:
-DEPENDENCIES / SIDE EFFECTS:
-GAPS / UNCERTAINTIES:
+EVIDENCE: E# exact path/symbol -> fact
+LIKELY CHANGE SURFACE:
+CONFLICTS / UNCERTAINTIES:
 ESCALATION: ... | NONE
 ```
 
-## Architect contract
+## Architect
 
 **Question:** `How should we change it?`
+
 **Sandbox:** `read-only`
 
-ROLE:
-- Identify as a read-only architect for the detected architecture and stack.
+- Consume Explorer evidence, not speculation; do not invent current state or product behavior.
+- Define the smallest safe desired behavior, affected modules, control/data-flow changes, compatibility,
+  migration/rollback concerns, failure modes, implementation sequence, and acceptance criteria.
+- Reference decisions as `D#` based on `E#` evidence when traceability helps.
+- Prefer minimal architecture change over an idealized redesign. Do not introduce CQRS, event buses,
+  repositories, domain layers, sagas, new abstractions, or infrastructure unless required.
+- Define explicit non-overlapping worker ownership.
+- Do not edit, implement, test, give final security/approval verdicts, or silently choose materially
+  different product/API/security outcomes.
+- Stop when evidence is insufficient, required behavior cannot be derived, or an unapproved breaking,
+  dependency, migration, security, or external-state decision appears.
 
-OBJECTIVE:
-- Produce the smallest decision-complete design.
-- Forbid edits, implementation, testing, security verdicts, and final approval.
-
-RESPONSIBILITIES:
-- Use Explorer evidence; do not invent current state.
-- Define resulting behavior, affected surfaces, contracts, data/migration/compatibility, docs, rollout,
-  verification, and explicit non-overlapping worker scopes.
-- Expose user decisions rather than silently selecting materially different outcomes.
-
-PERMISSIONS:
-- Same read-only boundary as Explorer.
-
-STOP CONDITIONS:
-- Insufficient current-state evidence, material product/API/security ambiguity, scope expansion, or
-  unapproved breaking/dependency/migration/external decisions.
-
-OUTPUT SCHEMA:
+Output:
 
 ```text
 STATUS: COMPLETE | ESCALATED
 QUESTION: How should we change it?
-ANSWER:
-PROPOSED CHANGE:
-AFFECTED SURFACES:
-DATA / API / MIGRATION: ... | NONE
-IMPLEMENTATION TASKS: ordered owner, scope, files, dependencies
-SECURITY / COMPATIBILITY:
-VALIDATION:
+DECISIONS: D# based on E#
+DESIRED BEHAVIOR:
+AFFECTED SURFACES / FLOW:
+COMPATIBILITY / MIGRATION / FAILURE MODES:
+IMPLEMENTATION TASKS: W# owner, scope, files, dependencies
+ACCEPTANCE CRITERIA:
 OPEN DECISIONS / ESCALATION: ... | NONE
 ```
 
-## Implementation worker contract
+## Implementation worker
 
 **Job:** `Make the change.`
+
 **Sandbox:** `workspace-write`
 
-Adapt ROLE/name to `frontend_worker`, `backend_worker`, `fullstack_worker`, `mobile_worker`,
-`data_worker`, `infra_worker`, or `implementation_worker` from evidence.
+Adapt the role name to the evidence-backed implementation surface.
 
-OBJECTIVE:
-- Implement only the approved design in assigned ownership.
-- Forbid redesign, broad exploration, final security/release verdicts, and scope expansion.
+Central principle: `SMALLEST SAFE DIFF`.
 
-RESPONSIBILITIES:
-- Follow real project paths/layers/tools and preserve unrelated shared-worktree edits.
-- Preserve contracts unless breaking behavior is explicitly approved.
-- Apply project-specific validation, auth, data, docs, migration, and quality rules where relevant.
-- Run only justified checks and report exact results.
-- Do not create/change tests unless explicitly requested.
+- Implement only approved `D#` decisions and `W#` tasks within exact assigned paths/files.
+- Follow repository conventions and preserve unrelated shared-worktree edits and compatibility unless the
+  handoff explicitly changes behavior.
+- Handle relevant error paths and report deviations from the approved plan.
+- Run only relevant build/typecheck/format checks when appropriate and report exact results.
+- Do not refactor unrelated code, make opportunistic cleanup, alter public APIs unnecessarily, weaken
+  checks, modify production data, touch secrets unnecessarily, or create/change tests unless requested.
+- Do not write outside exclusive SCOPE or perform Git index/commit/push, migration, dependency, service,
+  database, deployment, or external actions without exact authorization.
+- Stop when scope/ownership overlaps, a required decision is missing, repository evidence contradicts the
+  plan, or a migration/breaking/security/external action was not approved.
 
-PERMISSIONS:
-- Allow writes only to exact owned files in SCOPE.
-- Forbid unrelated formatting, Git index/commit/push, databases/migrations/services/external state unless
-  explicitly authorized with exact targets.
-
-STOP CONDITIONS:
-- Missing/overlapping ownership, absent design decision, unapproved breaking/dependency/migration/external
-  action, out-of-scope edit, user-change conflict, or unsafe check.
-
-OUTPUT SCHEMA:
+Output:
 
 ```text
 STATUS: COMPLETE | PARTIAL | ESCALATED
-TASK: Make the change.
+TASK: W# Make the change.
 CHANGE SUMMARY:
 CHANGED FILES:
 CHECKS:
@@ -161,144 +120,137 @@ REMAINING RISKS: ... | NONE
 ESCALATION: ... | NONE
 ```
 
-## Fast worker contract (optional)
+## Mechanical worker (optional)
 
 **Job:** `Make the change.`
+
 **Sandbox:** `workspace-write`
 
-Restrict to exact low-risk mechanical patterns: copy/docs, renames, repetitive metadata, or narrow config
-that does not change behavior/security/contracts. Explicitly forbid auth, data/schema/query/migration,
-uploads/filesystem/network, secrets, domain-critical rules, cross-module refactors, concurrency,
-deployment, and integrations. Escalate non-mechanical work to the primary worker.
+Allow only deterministic/repetitive edits: explicit renames, constants/config, simple field additions,
+obvious moves, narrow metadata, and other fully specified low-risk changes. Require exact owned files.
 
-Use the implementation worker output schema, adding `recommended owner` to ESCALATION.
+Explicitly forbid authentication, authorization, secrets, sensitive data, schema/query/migrations,
+uploads/filesystem/networking, infrastructure/deployment, integrations, public contract decisions,
+domain-critical behavior, concurrency, and cross-module redesign.
 
-## Test Engineer contract
+Required escalation rule:
+
+```text
+If the task requires architectural judgment, security judgment, data-model judgment, or behavior that is
+not explicitly specified, stop and escalate to the root orchestrator.
+```
+
+Use the implementation worker output and include the recommended owner on escalation. Do not generate
+the deprecated name `fast_worker`.
+
+## Test Engineer
 
 **Question:** `Did we break anything?`
-**Sandbox:** `workspace-write` with default no tracked writes
 
-OBJECTIVE:
-- Assess regressions against acceptance criteria and existing behavior.
-- Forbid production fixes, redesign, security verdicts, and final approval.
+**Sandbox:** `workspace-write`, defaulting to no tracked writes
 
-RESPONSIBILITIES:
-- Map criteria to relevant observable scenarios; use the actual test framework only if present.
-- Run permitted existing tests/checks and distinguish evidence from untested risk.
-- Change test files only when the user explicitly requested tests and SCOPE owns exact files.
+Use this evidence flow:
 
-PERMISSIONS:
-- Never edit production code.
-- Do not install/scaffold a test framework unless explicitly requested.
-- Allow only scoped test-source writes and normal artifacts of approved commands.
-- Forbid index/database/service/external changes unless explicitly authorized.
+```text
+Inspect final diff -> identify changed behavior -> map relevant scenarios/tests -> run narrow meaningful
+checks -> expand only when risk requires
+```
 
-STOP CONDITIONS:
-- Missing criteria/diff, unavailable environment, required production fix, unrequested test write,
-  out-of-scope scenario, or observed regression requiring worker action.
+- Report changed behaviors, relevant tests/scenarios, commands, pass/fail results, regression risks, and
+  coverage gaps with `T#` identifiers when useful.
+- Use the actual test framework only when present. A full suite is not automatically better evidence.
+- Do not edit production code or give security/final approval verdicts.
+- Create/modify tests only when explicitly requested or required by project policy and SCOPE owns exact
+  test files. Do not install/scaffold a framework without authorization.
+- Stop on missing criteria/diff, unavailable environment, a required production fix, an unrequested test
+  write, or an out-of-scope regression.
 
-OUTPUT SCHEMA:
+Output:
 
 ```text
 STATUS: PASS | FAIL | BLOCKED
 QUESTION: Did we break anything?
 ANSWER: YES | NO EVIDENCE OF REGRESSION | INCONCLUSIVE
-SCENARIOS:
-EVIDENCE:
+CHANGED BEHAVIORS:
+SCENARIOS / TESTS:
+EVIDENCE: T# command and result
 REGRESSIONS: ... | NONE
+COVERAGE GAPS / UNTESTED RISKS:
 TEST FILE CHANGES: ... | NONE
-UNTESTED RISKS:
 ESCALATION: ... | NONE
 ```
 
-## Security Reviewer contract
+## Security Reviewer
 
-**Question:** `Did we create a security problem?`
+**Question:** `Did we create or expose a security problem?`
+
+The contract objective must include the supported validator question `Did we create a security problem?`
+
 **Sandbox:** `read-only`
 
-OBJECTIVE:
-- Review only the scoped diff and affected trust boundaries.
-- Forbid implementation, broad audits, regression ownership, and final approval.
+- Review the scoped final diff and changed attack surface, not the whole repository by default.
+- Inspect applicable auth bypass, authorization/IDOR, trust boundaries, validation/injection, secrets,
+  uploads, SSRF, traversal, command execution, database privilege, sensitive data, network exposure,
+  insecure defaults, and external integrations.
+- Classify introduced versus pre-existing issues and cite exact locations with `S#` identifiers.
+- Every meaningful finding includes Severity, Location, Vulnerability, Attack path, Impact, and Recommended
+  remediation. Require an actionable attack/failure path when practical; avoid vague “potential issue.”
+- Do not edit, run exploit/write-producing actions, inspect live systems/secrets, own regression testing,
+  or give final approval.
+- Explicitly report when requested behavior conflicts with the authorization model. Stop when review
+  requires unavailable trust-boundary evidence, live exploitation, writes, or a product security decision.
 
-RESPONSIBILITIES:
-- Select threat areas from the target profile; do not paste irrelevant generic checks.
-- Produce evidence-backed findings with scenario, impact, introduced-vs-pre-existing classification,
-  and remediation.
-
-PERMISSIONS:
-- Allow targeted read-only inspection.
-- Forbid edits, write-producing checks, exploit actions, live systems, secrets, database/external changes.
-
-STOP CONDITIONS:
-- Missing diff/trust boundary, out-of-scope evidence, required live/exploit/write action, or unresolved
-  architecture/product security decision.
-
-OUTPUT SCHEMA:
+Output:
 
 ```text
 STATUS: COMPLETE | ESCALATED
 QUESTION: Did we create a security problem?
 ANSWER: YES | NO EVIDENCE OF A NEW SECURITY PROBLEM | INCONCLUSIVE
-FINDINGS: BLOCKER -> HIGH -> MEDIUM -> LOW, or NONE
+FINDINGS: S# with Severity, Location, Vulnerability, Attack path, Impact, Remediation; or NONE
 TRUST BOUNDARIES REVIEWED:
 RESIDUAL RISKS: ... | NONE
 ESCALATION: ... | NONE
 VERDICT: SECURITY_APPROVED | SECURITY_APPROVED_WITH_NOTES | SECURITY_CHANGES_REQUIRED
 ```
 
-Require exactly one final verdict token.
+Require exactly one final security verdict token.
 
-## Validator contract
+## Validator
 
 **Question:** `Did we actually satisfy the request?`
+
 **Sandbox:** `read-only`
 
-OBJECTIVE:
-- Trace the original request and acceptance criteria to final implementation and supplied evidence.
-- Forbid fixes, redesign, broad re-exploration, and new unrequested requirements.
+Validator is independent. Give it objective evidence: original request, repository constraints,
+acceptance criteria, final diff, `T#` results, and `S#` findings—not other agents' approval conclusions.
 
-RESPONSIBILITIES:
-- Validate only relevant correctness, contract, data, auth, compatibility, performance, architecture,
-  docs, migration/rollback, and unrelated-change surfaces.
-- Consume Worker, Test Engineer, and Security Reviewer evidence rather than rerunning their work.
-- Return concrete findings, not style preferences.
+- Inspect the final diff and evidence directly; never validate only a worker self-report.
+- Trace each `R#` requirement to `W#` changed files and review evidence.
+- Evaluate relevant behavior, compatibility, error paths, architecture, data/auth, docs, migration/rollback,
+  tests, security findings, and unrelated changes.
+- Do not fix, redesign, broadly re-explore, add requirements, or run write-producing checks.
+- Missing required request/diff/criteria/evidence prevents approval and requires escalation.
 
-PERMISSIONS:
-- Allow targeted reads and genuinely read-only Git/diff checks.
-- Forbid tests/linters/formatters/builds/migrations/services or other write-producing commands.
-
-STOP CONDITIONS:
-- Missing request/diff/criteria/evidence, required out-of-scope/write action, unresolved user decision.
-- Missing required evidence must prevent approval.
-
-OUTPUT SCHEMA:
+Output:
 
 ```text
 STATUS: COMPLETE | ESCALATED
 QUESTION: Did we actually satisfy the request?
 ANSWER: YES | NO | INCONCLUSIVE
-REQUIREMENT MATRIX:
-FINDINGS: BLOCKER -> HIGH -> MEDIUM -> LOW, or NONE
+REQUIREMENTS: [PASS] | [FAIL] R# -> W# -> T#/S# evidence
+BLOCKING FINDINGS: ... | NONE
+NON-BLOCKING NOTES: ... | NONE
 MISSING EVIDENCE: ... | NONE
 UNRELATED CHANGES: ... | NONE
-RELEASE NOTES / RISKS: ... | NONE
 VERDICT: APPROVED | APPROVED_WITH_NOTES | CHANGES_REQUIRED
 ```
 
 Require exactly one final verdict token.
 
-## Orchestrator integration
+## Root integration
 
-The root session delegates; it is not another specialist contract. Add project instructions that:
-
-- keep the root direct by default and open the multi-agent gate only for genuine complexity or explicit
-  user request;
-- use the roles in question order as applicable;
-- require Validator approval before declaring a multi-agent task complete;
-- classify read-only and scoped-write roles explicitly;
-- require exclusive write ownership and parallelize only independent work;
-- require every delegation to include INPUT, SCOPE, CONSTRAINTS, EXPECTED OUTPUT, and STOP CONDITIONS;
-- pass relevant outputs forward while preserving the original request for Validator.
-
-After every read-only handoff, require the orchestrator to inspect scoped Git status/diff to verify that
-the shared worktree did not change.
+Root remains direct by default, owns every delegation and escalation, and keeps `max_depth = 1`. It maps
+capabilities before agents, passes each role only objective context, verifies shared-worktree status after
+read-only handoffs, gives writers exclusive ownership, parallelizes only independent work, and obtains
+Validator approval before declaring a multi-agent task complete. Reviewer findings return to root; read-only
+roles never “quickly fix” them.

@@ -1,144 +1,142 @@
 # Stack and Architecture Adaptation
 
-Use repository evidence to build a project profile before choosing or writing agents.
-
-## Contents
-
-- Evidence order
-- Discovery checklist
-- Project profile schema
-- Worker selection
-- Contract vocabulary adaptation
-- Risk adaptation
-- Contamination review
+Use repository evidence to build a project profile before mapping capabilities or selecting agents.
 
 ## Evidence order
 
 Prefer evidence in this order:
 
-1. Repository instructions and indexed architecture documentation
-2. Lockfiles, manifests, workspace definitions, and tool configuration
-3. Entrypoints, directory boundaries, imports, and runtime wiring
-4. Existing scripts, CI, deployment, migration, and test configuration
-5. README claims only when confirmed by current files
+1. Repository instructions and indexed architecture documentation.
+2. Lockfiles, manifests, workspace definitions, and tool configuration.
+3. Entrypoints, directory boundaries, imports, and runtime wiring.
+4. Existing scripts, CI, deployment, migration, and test configuration.
+5. README claims confirmed by current files.
 
-Record exact paths for every material conclusion. Mark conflicting or stale documentation explicitly.
+Record exact paths for material conclusions. Mark conflicting or stale documentation. Do not perform broad
+scans when a manifest and a few entrypoints answer the question.
 
 ## Discovery checklist
 
-Inspect only relevant files, using targeted search/listing:
-
 - instructions: `AGENTS.md`, referenced rules, architecture/design docs;
-- JavaScript/TypeScript: `package.json`, lockfiles, workspace files, `tsconfig*`, framework/build config;
-- Python: `pyproject.toml`, `uv.lock`, requirements files, framework config, entrypoints;
-- Java/Kotlin: `pom.xml`, Gradle files, Spring/config sources;
-- Go: `go.mod`, command/package layout;
-- Rust: `Cargo.toml`, workspace crates;
-- .NET: solution/project files and application startup;
+- JavaScript/TypeScript: manifests, lockfiles, workspace files, `tsconfig*`, framework/build config;
+- Python: `pyproject.toml`, lockfiles/requirements, framework config, entrypoints;
+- Java/Kotlin: Maven/Gradle files, application configuration, startup sources;
+- Go/Rust/.NET: manifests/workspaces/solutions and executable entrypoints;
 - mobile: Expo/EAS, React Native, Android Gradle, Xcode project/workspace evidence;
-- data: ORM models, migrations, database config, query layers;
-- delivery: CI workflows, Docker/Compose, Kubernetes, Terraform, hosting config;
-- quality: actual lint/typecheck/test scripts and configurations;
-- existing agents: `.codex/agents/*.toml`, `.codex/config.toml`, plan templates.
+- data: models, migrations, database config, query/session/transaction layers;
+- delivery: CI workflows, containers, Kubernetes, Terraform, hosting configuration;
+- quality: actual build/lint/typecheck/test scripts and configurations;
+- existing agent setup: `.codex/agents/*.toml`, `.codex/config.toml`, `.codex/agent-team.toml`, workflow
+  instructions, and plan templates.
 
-Do not perform broad scans when a manifest and a few entrypoints answer the question.
+## Project profile
 
-## Project profile schema
-
-Build this internal profile before editing:
+Record this evidence-backed internal profile, then serialize the stable facts to the lightweight
+`.codex/agent-team.toml` format in [capability-model.md](capability-model.md):
 
 ```text
 ROOT:
-PROJECT TYPE: client | backend | full-stack | mobile | data | infrastructure | monorepo | other
+PROJECT TYPE: backend | frontend | fullstack | library | infrastructure | monorepo | other
 LANGUAGES / VERSIONS:
 FRAMEWORKS / VERSIONS:
 PACKAGE MANAGER / LOCKFILE:
 DEPLOYABLES:
 ARCHITECTURE / LAYERS:
-ENTRYPOINTS / REQUEST FLOW:
-DATA / MIGRATIONS:
-AUTH / TRUST BOUNDARIES:
+ENTRYPOINTS / CONTROL-DATA FLOW:
+HTTP API:
+PERSISTENCE / MIGRATIONS:
+AUTHENTICATION / AUTHORIZATION:
 UPLOADS / FILESYSTEM:
+BACKGROUND JOBS:
+NETWORKING:
 EXTERNAL INTEGRATIONS:
+INFRASTRUCTURE:
 BUILD / LINT / TYPECHECK:
 TESTS:
 CI / DEPLOYMENT / CONTAINERS:
 STRUCTURAL DOC RULES:
 EXISTING AGENT SETUP:
 KNOWN ABSENCES:
+RISK: auth, data, infrastructure, external integration
 SOURCE-TEMPLATE TERMS TO FORBID:
-EVIDENCE:
+EVIDENCE: exact paths/symbols
 ```
 
-Do not continue to generation while a material field is ambiguous enough to change team composition.
+Do not continue while a material field is ambiguous enough to change capability coverage, worker scope,
+or a trust boundary. Do not confuse “not found in bounded inspection” with “does not exist.”
 
-## Worker selection
+## From profile to capabilities
+
+Framework names are supporting evidence, never the decision. First identify behavior and risk, then decide
+whether root or an agent should own each capability.
+
+Bad:
+
+```text
+NestJS -> backend_worker + security_reviewer
+```
+
+Better:
+
+```text
+HTTP controllers + auth guards + persistence + external callback verified
+-> backend implementation capability
+-> security review activated for changed trust boundary
+-> architecture review only if the change crosses modules/contracts
+```
+
+## Implementation worker selection
 
 Choose the narrowest primary worker that owns the normal implementation path:
 
-| Evidence-backed project shape | Default primary worker | Typical scope |
+| Evidence-backed project shape | Default worker | Typical scope |
 | --- | --- | --- |
-| React/Vite/SPA/client-only | `frontend_worker` | components, hooks, state, routing, accessibility, client API adapters |
-| Next.js or similar tightly coupled app | `fullstack_worker` | routes/server actions, UI, shared contracts, persistence when present |
-| FastAPI/Django/Flask/NestJS/Spring/Go API | `backend_worker` | endpoints, validation, services, persistence, auth, integrations |
-| Expo/React Native/native app | `mobile_worker` | navigation, native UI, device APIs, builds when in scope |
-| ETL/analytics/ML pipeline | `data_worker` | pipelines, schemas, transformations, model/data validation |
-| Terraform/Kubernetes/platform repo | `infra_worker` | infrastructure code, deployment, secrets boundaries, rollout |
-| Library/CLI/unclear single surface | `implementation_worker` | project-native source and packaging |
+| React/Vite/SPA/client-only | `frontend_worker` | components, hooks, state, routing, accessibility, client adapters |
+| Tightly coupled web app | `fullstack_worker` | server routes/actions, UI, shared contracts, present persistence |
+| API/service backend | `backend_worker` | handlers, validation, services, present persistence/auth/integrations |
+| Expo/React Native/native app | `mobile_worker` | navigation, native UI, device APIs, scoped build config |
+| ETL/analytics/ML pipeline | `data_worker` | pipelines, schemas, transformations, data validation |
+| Terraform/Kubernetes/platform repo | `infra_worker` | infrastructure code, delivery, secrets boundaries, rollout |
+| Library/CLI/unclear single surface | `implementation_worker` | project-native source, CLI, validation, packaging |
 
-For a monorepo, create separate workers only when deployables have independent tooling/ownership and the
-multi-agent gate will materially benefit. Otherwise use one primary worker with explicit per-task scope.
+For a monorepo, create separate workers only when deployables have independent tooling and exclusive
+ownership and the complexity gate benefits. Otherwise use one worker with explicit per-task scope.
 
-Add `fast_worker` only when the repository has common mechanical work that can be safely excluded from:
+Add `mechanical_worker` only for explicit deterministic edits. It cannot own auth/authorization, secrets,
+data/schema/query/migration, uploads/filesystem/networking, public API/validation behavior, domain-critical
+rules, concurrency, infrastructure, deployment, or integrations. It stops when architecture, security,
+data-model, or unspecified behavioral judgment appears.
 
-- authentication/authorization and secrets;
-- database access/schema/migrations;
-- uploads/filesystem/networking/integrations;
-- public API or validation behavior;
-- domain-critical rules, concurrency, and deployment.
+## Contract vocabulary
 
-## Contract vocabulary adaptation
-
-Replace generic/source terminology with project-native terms:
+Use repository-native terms rather than importing an idealized layer:
 
 | Concern | Adapt from evidence |
 | --- | --- |
-| UI | component model, router, state/data-fetching approach, styling, accessibility, build tool |
-| API | route/controller/handler model, validation/schema types, middleware/dependencies/guards |
-| Business logic | services/use cases/domain modules actually present; do not invent a layer |
-| Data | ORM/query library, session/transaction model, migrations, model registration |
-| Auth | actual token/session/provider, server/client enforcement points, roles/ownership |
-| Tests | actual framework, scripts, environments, and whether tests exist |
-| Tooling | exact package manager and manifest scripts; never translate commands by habit |
-| Docs | canonical files and required structural documentation workflow |
-| Deployment | only files/providers that exist or are explicitly requested |
-
-Examples:
-
-- React/Vite: refer to components/hooks/routes, TypeScript, npm/pnpm/yarn/bun only as evidenced,
-  ESLint/typecheck/Vitest only if configured, browser auth and client-side secret boundaries.
-- FastAPI/SQLModel: refer to routers/dependencies/Pydantic models/sessions/Alembic only if present,
-  and use the repository's actual Python manager and sync/async model.
-- NestJS/TypeORM: refer to modules/controllers/providers/DTOs/guards/entities/migrations only if present.
-- Django: refer to apps/views/serializers/forms/models/migrations/middleware only if present.
-- Spring: refer to controllers/services/repositories/entities/config/security and Gradle/Maven as evidenced.
+| UI | component model, router, state/data fetching, styling, accessibility, build tool |
+| API | route/controller/handler model, validation types, middleware/dependencies/guards |
+| Business logic | services/use cases/domain modules that actually exist |
+| Data | actual ORM/query library, session/transaction model, migrations, model registration |
+| Auth | actual session/token/provider, enforcement points, roles/ownership |
+| Tests | present framework, commands, environments, or explicit absence |
+| Tooling | exact package manager and manifest scripts |
+| Docs | canonical files and structural documentation rules |
+| Deployment | only providers/files that exist or are explicitly requested |
 
 ## Risk adaptation
 
-Security Reviewer and Validator must focus on affected trust boundaries, not a generic checklist dump.
+Security and validation focus on the changed attack surface:
 
-- Client UI: XSS, unsafe HTML, token storage, exposed secrets, open redirects, dependency/supply chain.
-- Backend: authn/authz, IDOR, injection, mass assignment, validation, rate limits, sensitive responses.
-- Data/migrations: transactionality, destructive changes, compatibility, rollback, tenant/ownership filters.
-- Uploads: size/type/path validation, public exposure, malware handling, storage permissions.
-- Infrastructure: IAM, secrets, network exposure, state safety, rollout/rollback, CI credentials.
-- Integrations: SSRF, signature verification, retries/idempotency, credential leakage, untrusted responses.
+- client UI: XSS, unsafe HTML, token storage, exposed secrets, redirects, supply chain;
+- backend: authn/authz, IDOR, injection, mass assignment, validation, sensitive responses;
+- data/migrations: transactionality, destructive changes, compatibility, rollback, tenant filters;
+- uploads: size/type/path validation, exposure, malware handling, storage permissions;
+- infrastructure: IAM, secrets, network exposure, state safety, rollout/rollback, CI credentials;
+- integrations: SSRF, signature verification, retries/idempotency, credentials, untrusted responses.
 
 ## Contamination review
 
-Before completion:
-
-1. Search generated files for source-project frameworks, paths, commands, integrations, and role names.
-2. Confirm every surviving specific term exists in the target or explicit request.
-3. Confirm absent capabilities are stated as absent rather than silently scaffolded.
-4. Confirm worker responsibilities match real architecture rather than an idealized rewrite.
+Before completion, search generated files for unrelated stacks, paths, commands, integrations, and legacy
+role names. Confirm every surviving specific term is evidenced; absent capabilities remain absent; worker
+responsibilities match the current architecture; and no test, CI, container, migration, dependency, or
+agent was added merely because a template mentioned it.

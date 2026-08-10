@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Agent Team"
-  short_description: "Adapt a multi-agent team to any codebase"
-  default_prompt: "Use $codex-agent-team to inspect this repository and install an adaptive multi-agent structure for its stack and architecture."
+  short_description: "Install the smallest capability-driven agent team"
+  default_prompt: "Use $codex-agent-team to inspect this repository and install the smallest capability-driven agent team for its architecture and risks."

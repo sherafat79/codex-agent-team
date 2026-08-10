@@ -1,61 +1,115 @@
 # codex-agent-team
 
-A Codex skill that inspects a software repository and installs the smallest useful,
-project-specific multi-agent team for its real stack, architecture, tooling, and risks.
+A dependency-free Codex skill that inspects a software repository and installs the smallest useful,
+project-specific agent team for its actual architecture, task complexity, and risks.
 
-It generates Agent Contracts under `.codex/agents/`, configures bounded orchestration,
-and adds project-aware workflow and planning guidance without copying assumptions from
-an unrelated framework.
+It generates explicit Agent Contracts, a lightweight evidence-backed project/capability profile, bounded
+root-owned orchestration, and deterministic validation without copying assumptions from another stack.
 
-## What it does
+## Model
 
-- Detects languages, frameworks, package managers, deployables, and architecture from repository evidence.
-- Selects a minimal team covering exploration, architecture, implementation, testing, security, and validation.
-- Adapts agent terminology, commands, permissions, and risks to the target repository.
-- Preserves existing instructions and unrelated working-tree changes.
-- Validates generated contracts, orchestration settings, and source-template contamination.
+`Capability != Agent`.
 
-## Workflow
+Exploration, implementation, and validation must always be covered. Architecture, regression assessment,
+and security review are conditional. Each capability may be handled by root, a generated agent, a
+compatible existing specialist, or—when conditional—left conditional/not applicable with an explicit
+evidence-backed justification.
 
-The exact worker is selected from repository evidence; it is not fixed to one stack.
+Adding agents is not inherently better:
+
+```text
+Use the minimum number of agents necessary to safely satisfy the task.
+```
+
+The skill follows this pipeline:
 
 ```mermaid
 flowchart TD
-    U["User"] --> R["Orchestrator<br/>Root agent"]
-    R --> G{"Complexity gate"}
-
-    G -->|Simple| D["Root handles directly"]
-    D --> O["Result"]
-
-    G -->|Complex or explicitly multi-agent| E["Explorer<br/>read-only"]
-    E -->|Design needed| A["Architect<br/>read-only"]
-    E -->|Straightforward| P["Plan"]
-    A --> P
-
-    P --> W{"Select worker from<br/>project evidence"}
-    W --> PW["Primary worker<br/>Frontend / Backend / Full-stack<br/>Mobile / Data / Infra / Implementation"]
-    W -->|Low-risk mechanical work only| FW["Fast worker<br/>optional"]
-
-    PW --> T["Test Engineer"]
-    FW --> T
-    T -->|Security-sensitive surface| S["Security Reviewer<br/>read-only"]
-    T -->|No affected trust boundary| V{"Validator<br/>read-only"}
-    S --> V
-
-    V -->|APPROVED| O
-    V -->|CHANGES_REQUIRED| F["Scoped worker fix"]
-    F --> T
+    E["Inspect repository evidence"] --> P["Build project profile"]
+    P --> C["Assess complexity and risk"]
+    C --> M["Map required capabilities"]
+    M --> G{"Root direct or multi-agent?"}
+    G -->|"Simple / low coordination value"| R["Root handles work"]
+    G -->|"Independent expertise adds safety"| T["Select smallest useful team"]
+    T --> A["Generate explicit Agent Contracts"]
+    A --> O["Root-controlled execution"]
+    O --> X["Independent regression/security review when activated"]
+    R --> V["Final validation capability"]
+    X --> V
 ```
+
+Framework detection alone never selects a role. The profile first records verified behavior—such as auth,
+persistence, networking, or integrations—and its risk. That evidence drives capabilities, and capabilities
+drive team selection.
+
+## Centralized orchestration
+
+The root Codex session is the only orchestrator. `max_depth = 1` remains mandatory: subagents report new
+work or ambiguity to root and never create autonomous chains. Read-only roles cannot fix findings.
+Write-capable roles receive exact, exclusive scope.
+
+Parallel execution is conservative. Independent backend, frontend, or documentation work may overlap when
+ownership and decisions do not. Explorer -> Architect -> Worker -> Review -> Validator is a dependency
+chain and stays sequential. `max_threads` is capacity, not a concurrency target; any positive value is
+valid, including `1`, and the generated default is `4`.
+
+Independent Review / Context Isolation reduces confirmation bias. Later reviewers receive the original
+requirement, constraints, final diff, acceptance criteria, and objective test/security evidence—not
+persuasive conclusions from earlier agents.
+
+## Generated files
+
+The skill may merge or create:
+
+```text
+.codex/agent-team.toml   # project, stack, features, risk, capability modes
+.codex/agents/*.toml    # only selected Agent Contracts
+.codex/config.toml      # bounded root-owned orchestration
+AGENTS.md               # complexity gate, ownership, handoffs, escalation
+PLANS.md                # decisions, work, acceptance, evidence trace
+```
+
+`.codex/agent-team.toml` is intentionally small and uses standard TOML. It exists so coverage and
+contradictions can be validated deterministically without an LLM, external schema package, or brittle
+role-count rules.
+
+## Agent Contracts and handoffs
+
+Every generated contract contains exactly:
+
+```text
+ROLE
+OBJECTIVE
+INPUTS
+RESPONSIBILITIES
+PERMISSIONS
+STOP / ESCALATION CONDITIONS
+OUTPUT
+```
+
+Delegations specify objective, scope, input evidence, required behavior, constraints, preservation and
+exclusion boundaries, acceptance criteria, escalation conditions, and expected output. Non-trivial work
+may use lightweight `R# -> E# -> D# -> W# -> T#/S# -> V#` trace IDs; trivial work does not need ceremony.
+
+Implementation follows `SMALLEST SAFE DIFF`. The optional `mechanical_worker` is limited to fully specified
+deterministic edits and stops when architecture, security, data-model, or unspecified behavior judgment is
+required.
 
 ## Requirements
 
-- Codex with support for skills and project agents.
+- Codex with skills and project-agent support.
 - Python 3.11 or newer for the bundled validator.
 - No third-party runtime dependencies.
 
 ## Install
 
-Clone the repository into your personal Codex skills directory.
+Using the Skills CLI:
+
+```bash
+npx skills add https://github.com/sherafat79/codex-agent-team
+```
+
+Or clone the repository manually.
 
 macOS or Linux:
 
@@ -73,23 +127,11 @@ Codex detects skill changes automatically. If the skill does not appear, restart
 
 ## Use
 
-Invoke the skill from the repository you want to configure:
+Invoke the skill from the repository to configure:
 
 ```text
-Use $codex-agent-team to inspect this repository and install an adaptive multi-agent team.
+Use $codex-agent-team to inspect this repository and install an adaptive capability-driven agent team.
 ```
-
-The skill may create or update:
-
-```text
-.codex/agents/*.toml
-.codex/config.toml
-AGENTS.md
-PLANS.md
-```
-
-The root Codex session remains the orchestrator. Read-only roles cannot modify project
-state, and write-capable roles receive explicit, non-overlapping ownership.
 
 ## Validate an installation
 
@@ -97,8 +139,17 @@ state, and write-capable roles receive explicit, non-overlapping ownership.
 python ~/.agents/skills/codex-agent-team/scripts/validate_agent_team.py --project /path/to/project
 ```
 
-Use `--plan-file` for a non-default plan template and repeat `--forbid-term` for
-irrelevant source-stack terms that must not appear in generated workflow files.
+Use `--plan-file` for a non-default plan template and repeat `--forbid-term` for irrelevant source-stack
+terms that must not appear in generated workflow files. Validation parses TOML and contract sections,
+checks capability coverage and agent/objective links, enforces least privilege and scoped writes, detects
+obvious read-only/write contradictions, and keeps `max_depth = 1` strict.
+
+## Migration from earlier releases
+
+Existing installations should regenerate or add `.codex/agent-team.toml`, rename `fast_worker` to
+`mechanical_worker`, change the final contract heading from `OUTPUT SCHEMA` to `OUTPUT`, and make scoped
+write restrictions concrete. The legacy speed-based worker name is rejected with a migration message; it
+is not retained indefinitely as an alias.
 
 ## Development
 
@@ -108,14 +159,13 @@ Run the dependency-free test suite:
 python -m unittest discover -s tests -v
 ```
 
+CI runs the same command on Python 3.11.
+
 ## Security
 
-Review generated Agent Contracts before using them on sensitive repositories. The skill
-is designed to keep discovery and review roles read-only, but implementation agents can
-edit files explicitly assigned to them.
-
-Please report suspected vulnerabilities privately through the repository's GitHub
-Security page rather than opening a public issue.
+Review generated contracts before using them on sensitive repositories. Security Reviewers focus on the
+changed attack surface and report actionable attack/failure paths; they remain read-only. Report suspected
+vulnerabilities privately through the repository's GitHub Security page.
 
 ## License
 
