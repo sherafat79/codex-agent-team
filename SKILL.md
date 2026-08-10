@@ -1,9 +1,9 @@
 ---
-name: bootstrap-agent-team
+name: codex-agent-team
 description: Inspect any software repository and install or adapt a Codex multi-agent team to its actual language, frameworks, architecture, tooling, risks, and conventions. Use when the user asks to add a multi-agent structure, create project-specific custom agents under .codex/agents, convert role prompts into Agent Contracts, define orchestrator delegation rules, or port an existing agent setup from one stack (such as FastAPI or NestJS) to another (such as React, Next.js, Django, Spring, Go, or a monorepo).
 ---
 
-# Bootstrap Agent Team
+# Codex Agent Team
 
 Create the smallest useful project-specific agent team. Derive every stack-specific instruction from
 repository evidence; never copy framework vocabulary, commands, paths, or risks from the source template.
