@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -7,8 +8,9 @@ import unittest
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR = ROOT / "scripts" / "validate_agent_team.py"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SKILL_ROOT = REPO_ROOT / "skills" / "codex-agent-team"
+VALIDATOR = SKILL_ROOT / "scripts" / "validate_agent_team.py"
 
 ROLE_OBJECTIVES = {
     "explorer": "How does it work now?",
@@ -92,7 +94,7 @@ def write_profile(
         "",
         "[project]",
         'type = "library"',
-        'evidence = ["SKILL.md", "scripts/validate_agent_team.py"]',
+        'evidence = ["AGENTS.md", ".codex/config.toml"]',
         "",
         "[stack]",
         'languages = ["Python", "Markdown"]',
@@ -174,14 +176,61 @@ class PublicPackageTests(unittest.TestCase):
         self.assertIn(phrase, result.stderr)
 
     def test_skill_metadata_uses_public_name(self) -> None:
-        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         metadata = skill.split("---", 2)[1]
         self.assertIn("name: codex-agent-team", metadata)
 
-        interface = (ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
+        interface = (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
         self.assertIn('display_name: "Codex Agent Team"', interface)
         self.assertIn("$codex-agent-team", interface)
         self.assertNotIn("bootstrap-agent-team", skill + interface)
+
+    def test_isolated_skill_subtree_is_self_contained(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            isolated_skill = temporary_root / "codex-agent-team"
+            shutil.copytree(SKILL_ROOT, isolated_skill)
+
+            for relative_path in (
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/agent-contracts.md",
+                "references/capability-model.md",
+                "references/complexity-gate.md",
+                "references/handoff-protocol.md",
+                "references/stack-adaptation.md",
+                "scripts/validate_agent_team.py",
+            ):
+                self.assertTrue((isolated_skill / relative_path).is_file(), relative_path)
+
+            for repository_only_name in (
+                ".github",
+                "docs",
+                "tests",
+                "examples",
+                "README.md",
+                "LICENSE",
+            ):
+                self.assertFalse((isolated_skill / repository_only_name).exists())
+            self.assertFalse(
+                any(path.suffix.lower() in {".gif", ".jpg", ".jpeg", ".png", ".webp"}
+                    for path in isolated_skill.rglob("*"))
+            )
+
+            project = temporary_root / "project"
+            write_valid_project(project)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(isolated_skill / "scripts" / "validate_agent_team.py"),
+                    "--project",
+                    str(project),
+                ],
+                capture_output=True,
+                check=False,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_validator_accepts_capability_driven_team(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -196,7 +245,7 @@ class PublicPackageTests(unittest.TestCase):
         self.assertIn("capability coverage, 3 Agent Contract(s)", result.stdout)
 
     def test_checked_in_examples_are_validator_ready(self) -> None:
-        examples = ROOT / "examples"
+        examples = REPO_ROOT / "examples"
         fixtures = sorted(path.parent.parent for path in examples.glob("*/.codex/agent-team.toml"))
         self.assertEqual(
             [path.name for path in fixtures],

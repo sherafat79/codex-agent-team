@@ -11,5 +11,5 @@ can be owned by root unless the final diff expands the compatibility surface.
 Validate from the repository root:
 
 ```bash
-python scripts/validate_agent_team.py --project examples/jwt-refresh
+python skills/codex-agent-team/scripts/validate_agent_team.py --project examples/jwt-refresh
 ```

@@ -8,5 +8,5 @@ generated because delegation would add coordination without useful independent e
 Validate from the repository root:
 
 ```bash
-python scripts/validate_agent_team.py --project examples/root-only-typo
+python skills/codex-agent-team/scripts/validate_agent_team.py --project examples/root-only-typo
 ```

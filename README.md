@@ -1,6 +1,6 @@
 # codex-agent-team
 
-![Codex Agent Team capability-driven architecture](assets/codex-agent-team.png)
+![Codex Agent Team capability-driven architecture](docs/assets/codex-agent-team.png)
 
 **Build the smallest safe Codex agent team for every coding task.**
 
@@ -22,24 +22,22 @@ workflow, and a validator that can reject unsafe or incomplete installations.
 Using the Skills CLI:
 
 ```bash
-npx skills add https://github.com/sherafat79/codex-agent-team
+npx skills add https://github.com/sherafat79/codex-agent-team/tree/main/skills/codex-agent-team --global --agent codex
 ```
 
-Or clone the repository manually.
-
-macOS or Linux:
-
-```bash
-git clone https://github.com/sherafat79/codex-agent-team.git ~/.agents/skills/codex-agent-team
-```
-
-Windows PowerShell:
-
-```powershell
-git clone https://github.com/sherafat79/codex-agent-team.git "$env:USERPROFILE\.agents\skills\codex-agent-team"
-```
+The direct subtree URL installs only `skills/codex-agent-team/`; repository documentation, tests,
+examples, CI configuration, and media are not part of the installed skill.
 
 Codex detects skill changes automatically. If the skill does not appear, restart Codex.
+
+## Repository layout
+
+```text
+skills/codex-agent-team/  Installable Codex skill
+docs/assets/              README and project media
+tests/                    Repository development tests
+examples/                 Checked-in validation fixtures
+```
 
 ## Requirements
 
@@ -251,10 +249,23 @@ is not retained indefinitely as an alias.
 
 ## Development
 
+Clone the whole repository only for development:
+
+```bash
+git clone https://github.com/sherafat79/codex-agent-team.git
+cd codex-agent-team
+```
+
 Run the dependency-free test suite:
 
 ```bash
 python -m unittest discover -s tests -v
+```
+
+Run the validator from its repository location:
+
+```bash
+python skills/codex-agent-team/scripts/validate_agent_team.py --project examples/root-only-typo
 ```
 
 CI runs the same command on Python 3.11. The suite also runs the validator against every checked-in

@@ -10,6 +10,6 @@ These are complete, validator-ready agent-team installations rather than documen
 From the repository root:
 
 ```bash
-python scripts/validate_agent_team.py --project examples/root-only-typo
-python scripts/validate_agent_team.py --project examples/jwt-refresh
+python skills/codex-agent-team/scripts/validate_agent_team.py --project examples/root-only-typo
+python skills/codex-agent-team/scripts/validate_agent_team.py --project examples/jwt-refresh
 ```
