@@ -195,6 +195,19 @@ class PublicPackageTests(unittest.TestCase):
         self.assertIn("ORCHESTRATION DEPTH: PASS", result.stdout)
         self.assertIn("capability coverage, 3 Agent Contract(s)", result.stdout)
 
+    def test_checked_in_examples_are_validator_ready(self) -> None:
+        examples = ROOT / "examples"
+        fixtures = sorted(path.parent.parent for path in examples.glob("*/.codex/agent-team.toml"))
+        self.assertEqual(
+            [path.name for path in fixtures],
+            ["jwt-refresh", "root-only-typo"],
+        )
+        for fixture in fixtures:
+            with self.subTest(fixture=fixture.name):
+                result = self.run_validator(fixture)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn("CAPABILITY COVERAGE: PASS", result.stdout)
+
     def test_max_threads_one_is_accepted(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             project = Path(directory)

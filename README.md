@@ -2,6 +2,24 @@
 
 ![Codex Agent Team capability-driven architecture](assets/codex-agent-team.png)
 
+**Build the smallest safe Codex agent team for every coding task.**
+
+## Quick Example
+
+```text
+Input: "Add JWT refresh token support"
+
+Output:
+Explorer
+Architect
+Backend Worker
+Security Reviewer
+Validator
+```
+
+[Run the checked-in JWT fixture](examples/jwt-refresh/README.md) or compare it with the
+[root-only typo fixture](examples/root-only-typo/README.md).
+
 A dependency-free Codex skill that inspects a software repository and installs the smallest useful,
 project-specific agent team for its actual architecture, task complexity, and risks.
 
@@ -232,7 +250,8 @@ Run the dependency-free test suite:
 python -m unittest discover -s tests -v
 ```
 
-CI runs the same command on Python 3.11.
+CI runs the same command on Python 3.11. The suite also runs the validator against every checked-in
+fixture under [`examples/`](examples/README.md).
 
 ## Security
 

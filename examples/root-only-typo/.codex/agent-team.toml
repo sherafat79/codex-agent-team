@@ -1,0 +1,52 @@
+version = 1
+
+[project]
+type = "other"
+evidence = ["README.md"]
+
+[stack]
+languages = ["Markdown"]
+frameworks = []
+package_manager = "none"
+deployment = []
+
+[features]
+http_api = false
+persistence = false
+authentication = false
+authorization = false
+uploads = false
+external_integrations = false
+background_jobs = false
+networking = false
+infrastructure = false
+
+[risk]
+authentication = "low"
+data = "low"
+infrastructure = "low"
+external_integration = "low"
+
+[capabilities.exploration]
+mode = "root"
+justification = "The request names one documentation file and needs no separate discovery."
+
+[capabilities.implementation]
+mode = "root"
+justification = "The change is a single deterministic text correction."
+
+[capabilities.validation]
+mode = "root"
+justification = "Root can inspect the focused diff and rendered text directly."
+
+[capabilities.architecture]
+mode = "not_applicable"
+justification = "No design or module boundary changes."
+
+[capabilities.regression_assessment]
+mode = "not_applicable"
+justification = "No executable behavior changes."
+
+[capabilities.security_review]
+mode = "not_applicable"
+justification = "No trust boundary or sensitive surface changes."

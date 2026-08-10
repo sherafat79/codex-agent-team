@@ -1,0 +1,53 @@
+version = 1
+
+[project]
+type = "backend"
+evidence = ["README.md"]
+
+[stack]
+languages = ["Python"]
+frameworks = ["FastAPI"]
+package_manager = "uv"
+database = "PostgreSQL"
+deployment = []
+
+[features]
+http_api = true
+persistence = true
+authentication = true
+authorization = true
+uploads = false
+external_integrations = false
+background_jobs = false
+networking = true
+infrastructure = false
+
+[risk]
+authentication = "high"
+data = "medium"
+infrastructure = "low"
+external_integration = "low"
+
+[capabilities.exploration]
+mode = "agent"
+agent = "explorer"
+
+[capabilities.implementation]
+mode = "agent"
+agent = "backend_worker"
+
+[capabilities.validation]
+mode = "agent"
+agent = "validator"
+
+[capabilities.architecture]
+mode = "agent"
+agent = "architect"
+
+[capabilities.regression_assessment]
+mode = "conditional"
+justification = "Activate a Test Engineer if the final diff changes token compatibility or persistence behavior."
+
+[capabilities.security_review]
+mode = "agent"
+agent = "security_reviewer"
