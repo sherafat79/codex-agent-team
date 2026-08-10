@@ -4,6 +4,57 @@
 
 **Build the smallest safe Codex agent team for every coding task.**
 
+A dependency-free Codex skill that inspects a software repository and installs the smallest useful,
+project-specific agent team for its actual architecture, task complexity, and risks.
+
+It generates explicit Agent Contracts, a lightweight evidence-backed project/capability profile, bounded
+root-owned orchestration, and deterministic validation without copying assumptions from another stack.
+
+## Why this exists
+
+Fixed agent rosters make tiny changes pay a coordination tax and still miss specialists when risk changes.
+This skill starts with repository evidence and the task at hand, then activates only the capabilities that
+add safety or clarity. The result is a small project profile, only the useful Agent Contracts, a root-owned
+workflow, and a validator that can reject unsafe or incomplete installations.
+
+## Install
+
+Using the Skills CLI:
+
+```bash
+npx skills add https://github.com/sherafat79/codex-agent-team
+```
+
+Or clone the repository manually.
+
+macOS or Linux:
+
+```bash
+git clone https://github.com/sherafat79/codex-agent-team.git ~/.agents/skills/codex-agent-team
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/sherafat79/codex-agent-team.git "$env:USERPROFILE\.agents\skills\codex-agent-team"
+```
+
+Codex detects skill changes automatically. If the skill does not appear, restart Codex.
+
+## Requirements
+
+- Codex with skills and project-agent support.
+- Python 3.11 or newer for the bundled validator.
+- No third-party runtime dependencies.
+
+## Use
+
+Invoke the skill from the repository to configure:
+
+```text
+Use $codex-agent-team to inspect this repository and install an adaptive capability-driven agent team.
+```
+
 ## Quick Example
 
 ```text
@@ -17,21 +68,15 @@ Security Reviewer
 Validator
 ```
 
-[Run the checked-in JWT fixture](examples/jwt-refresh/README.md) or compare it with the
-[root-only typo fixture](examples/root-only-typo/README.md).
+## Executable examples
 
-A dependency-free Codex skill that inspects a software repository and installs the smallest useful,
-project-specific agent team for its actual architecture, task complexity, and risks.
+- [`root-only-typo`](examples/root-only-typo/README.md) — a documentation fix with no generated agents.
+- [`jwt-refresh`](examples/jwt-refresh/README.md) — the five-agent Quick Example above.
 
-It generates explicit Agent Contracts, a lightweight evidence-backed project/capability profile, bounded
-root-owned orchestration, and deterministic validation without copying assumptions from another stack.
+Both are complete installations exercised by the test suite. See all commands in
+[`examples/README.md`](examples/README.md).
 
-## Why this exists
-
-Fixed agent rosters make tiny changes pay a coordination tax and still miss specialists when risk changes.
-This skill starts with repository evidence and the task at hand, then activates only the capabilities that
-add safety or clarity. The result is a small project profile, only the useful Agent Contracts, a root-owned
-workflow, and a validator that can reject unsafe or incomplete installations.
+## What changes in practice
 
 | Real change | Fixed roster | Capability-driven execution |
 | --- | --- | --- |
@@ -175,44 +220,6 @@ may use lightweight `R# -> E# -> D# -> W# -> T#/S# -> V#` trace IDs; trivial wor
 Implementation follows `SMALLEST SAFE DIFF`. The optional `mechanical_worker` is limited to fully specified
 deterministic edits and stops when architecture, security, data-model, or unspecified behavior judgment is
 required.
-
-## Requirements
-
-- Codex with skills and project-agent support.
-- Python 3.11 or newer for the bundled validator.
-- No third-party runtime dependencies.
-
-## Install
-
-Using the Skills CLI:
-
-```bash
-npx skills add https://github.com/sherafat79/codex-agent-team
-```
-
-Or clone the repository manually.
-
-macOS or Linux:
-
-```bash
-git clone https://github.com/sherafat79/codex-agent-team.git ~/.agents/skills/codex-agent-team
-```
-
-Windows PowerShell:
-
-```powershell
-git clone https://github.com/sherafat79/codex-agent-team.git "$env:USERPROFILE\.agents\skills\codex-agent-team"
-```
-
-Codex detects skill changes automatically. If the skill does not appear, restart Codex.
-
-## Use
-
-Invoke the skill from the repository to configure:
-
-```text
-Use $codex-agent-team to inspect this repository and install an adaptive capability-driven agent team.
-```
 
 ## Validate an installation
 
