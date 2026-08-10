@@ -15,6 +15,38 @@ an unrelated framework.
 - Preserves existing instructions and unrelated working-tree changes.
 - Validates generated contracts, orchestration settings, and source-template contamination.
 
+## Workflow
+
+The exact worker is selected from repository evidence; it is not fixed to one stack.
+
+```mermaid
+flowchart TD
+    U["User"] --> R["Orchestrator<br/>Root agent"]
+    R --> G{"Complexity gate"}
+
+    G -->|Simple| D["Root handles directly"]
+    D --> O["Result"]
+
+    G -->|Complex or explicitly multi-agent| E["Explorer<br/>read-only"]
+    E -->|Design needed| A["Architect<br/>read-only"]
+    E -->|Straightforward| P["Plan"]
+    A --> P
+
+    P --> W{"Select worker from<br/>project evidence"}
+    W --> PW["Primary worker<br/>Frontend / Backend / Full-stack<br/>Mobile / Data / Infra / Implementation"]
+    W -->|Low-risk mechanical work only| FW["Fast worker<br/>optional"]
+
+    PW --> T["Test Engineer"]
+    FW --> T
+    T -->|Security-sensitive surface| S["Security Reviewer<br/>read-only"]
+    T -->|No affected trust boundary| V{"Validator<br/>read-only"}
+    S --> V
+
+    V -->|APPROVED| O
+    V -->|CHANGES_REQUIRED| F["Scoped worker fix"]
+    F --> T
+```
+
 ## Requirements
 
 - Codex with support for skills and project agents.
