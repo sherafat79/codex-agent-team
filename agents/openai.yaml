@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bootstrap Agent Team"
+  short_description: "Adapt a multi-agent team to any codebase"
+  default_prompt: "Use $bootstrap-agent-team to inspect this repository and install an adaptive multi-agent structure for its stack and architecture."
