@@ -1,5 +1,7 @@
 # codex-agent-team
 
+![Codex Agent Team capability-driven architecture](assets/codex-agent-team.png)
+
 A dependency-free Codex skill that inspects a software repository and installs the smallest useful,
 project-specific agent team for its actual architecture, task complexity, and risks.
 
