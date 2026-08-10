@@ -8,6 +8,19 @@ project-specific agent team for its actual architecture, task complexity, and ri
 It generates explicit Agent Contracts, a lightweight evidence-backed project/capability profile, bounded
 root-owned orchestration, and deterministic validation without copying assumptions from another stack.
 
+## Why this exists
+
+Fixed agent rosters make tiny changes pay a coordination tax and still miss specialists when risk changes.
+This skill starts with repository evidence and the task at hand, then activates only the capabilities that
+add safety or clarity. The result is a small project profile, only the useful Agent Contracts, a root-owned
+workflow, and a validator that can reject unsafe or incomplete installations.
+
+| Real change | Fixed roster | Capability-driven execution |
+| --- | --- | --- |
+| Fix a typo | Wake the whole team | Root only |
+| Add an auth endpoint | Use the same generic roles | Explorer -> backend worker -> Security Reviewer -> Validator |
+| Run a cross-service migration | Hope the fixed roles cover every boundary | Explorer -> Architect -> scoped workers -> independent review -> Validator |
+
 ## Model
 
 `Capability != Agent`.
@@ -74,6 +87,54 @@ PLANS.md                # decisions, work, acceptance, evidence trace
 `.codex/agent-team.toml` is intentionally small and uses standard TOML. It exists so coverage and
 contradictions can be validated deterministically without an LLM, external schema package, or brittle
 role-count rules.
+
+<details>
+<summary>Example: an auth, data, and infrastructure-aware project profile</summary>
+
+This backend has verified authentication, persistent data, and infrastructure surfaces. Their risk maps
+to architecture, regression, and security capabilities instead of assuming that every backend needs the
+same team.
+
+```toml
+version = 1
+
+[project]
+type = "backend"
+evidence = ["pyproject.toml", "app/api/auth.py", "alembic/versions/", "infra/terraform/"]
+
+[stack]
+languages = ["Python", "HCL"]
+frameworks = ["FastAPI", "SQLAlchemy", "Terraform"]
+package_manager = "uv"
+deployment = ["Docker", "Terraform"]
+
+[features]
+http_api = true
+persistence = true
+authentication = true
+authorization = true
+uploads = false
+external_integrations = false
+background_jobs = false
+networking = true
+infrastructure = true
+
+[risk]
+authentication = "high"
+data = "high"
+infrastructure = "medium"
+external_integration = "low"
+
+[capabilities]
+exploration = { mode = "agent", agent = "explorer" }
+implementation = { mode = "agent", agent = "backend_worker" }
+validation = { mode = "agent", agent = "validator" }
+architecture = { mode = "agent", agent = "architect" }
+regression_assessment = { mode = "agent", agent = "test_engineer" }
+security_review = { mode = "agent", agent = "security_reviewer" }
+```
+
+</details>
 
 ## Agent Contracts and handoffs
 
@@ -145,6 +206,16 @@ Use `--plan-file` for a non-default plan template and repeat `--forbid-term` for
 terms that must not appear in generated workflow files. Validation parses TOML and contract sections,
 checks capability coverage and agent/objective links, enforces least privilege and scoped writes, detects
 obvious read-only/write contradictions, and keeps `max_depth = 1` strict.
+
+A successful run reports the same gates it enforces:
+
+```text
+CAPABILITY COVERAGE: PASS
+LEAST PRIVILEGE: PASS
+HANDOFF CONTRACTS: PASS
+ORCHESTRATION DEPTH: PASS
+OK: validated project profile, capability coverage, 6 Agent Contract(s), root-owned orchestration, and plan template in /path/to/project
+```
 
 ## Migration from earlier releases
 

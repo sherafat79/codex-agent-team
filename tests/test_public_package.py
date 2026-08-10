@@ -189,6 +189,10 @@ class PublicPackageTests(unittest.TestCase):
             write_valid_project(project)
             result = self.run_validator(project)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("CAPABILITY COVERAGE: PASS", result.stdout)
+        self.assertIn("LEAST PRIVILEGE: PASS", result.stdout)
+        self.assertIn("HANDOFF CONTRACTS: PASS", result.stdout)
+        self.assertIn("ORCHESTRATION DEPTH: PASS", result.stdout)
         self.assertIn("capability coverage, 3 Agent Contract(s)", result.stdout)
 
     def test_max_threads_one_is_accepted(self) -> None:

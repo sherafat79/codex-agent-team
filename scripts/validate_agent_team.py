@@ -513,6 +513,10 @@ def main() -> int:
         )
         return 1
 
+    print("CAPABILITY COVERAGE: PASS")
+    print("LEAST PRIVILEGE: PASS")
+    print("HANDOFF CONTRACTS: PASS")
+    print("ORCHESTRATION DEPTH: PASS")
     print(
         f"OK: validated project profile, capability coverage, {len(agent_paths)} Agent Contract(s), "
         f"root-owned orchestration, and plan template in {project}"
